@@ -1,0 +1,41 @@
+---
+- name: Setup Docker
+  hosts: all
+  become: true
+  become_user: root
+  become_method: sudo
+  gather_facts: false
+  tasks:
+    - name: Setup
+      # Note: The IP CIDR should be chosen carefully! Collisions with the host
+      # network will make everything not work.
+      shell: |
+        #apt update
+        #apt install -y docker.io
+        #apt install -y unzip
+        docker swarm init --default-addr-pool 10.0.0.0/8 || echo done
+        docker stack rm monitoring || echo done
+
+        rm -rf /etc/tvm
+        mkdir -p \
+          /etc/tvm/grafana-provisioning/datasources \
+          /etc/tvm/grafana-provisioning/notifiers \
+          /etc/tvm/grafana-provisioning/dashboards \
+          /etc/tvm/grafana-provisioning/dashboards \
+          /etc/tvm/dashboards/ \
+          /etc/tvm/prometheus \
+          /etc/tvm/prometheus \
+          /etc/tvm/prometheus_data \
+          /etc/tvm/grafana
+
+        find /etc/tvm -type d | xargs chmod 777
+    - name: Copy files
+      template:
+        src: "{{ item.src }}"
+        dest: "/etc/tvm/{{ item.path }}"
+      with_filetree: files/
+      when: item.state == 'file'
+    - name: Run compose
+      shell: |
+        docker stack rm monitoring || echo done
+        docker stack deploy -c /etc/tvm/docker-compose.yml monitoring

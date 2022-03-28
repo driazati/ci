@@ -1,0 +1,55 @@
+version: '3.7'
+
+services:
+  grafana:
+    image: grafana/grafana:8.4.4
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "10"
+    networks:
+      - monitoring
+    volumes:
+      - /etc/tvm/grafana:/var/lib/grafana
+      - /etc/tvm/grafana-provisioning/:/etc/grafana/provisioning
+      - /etc/tvm/email_template.html:/usr/share/grafana/public/emails/alert_notification.html
+      - /etc/tvm/grafana.ini:/etc/grafana/grafana.ini
+      - /etc/tvm/dashboards:/var/lib/grafana/dashboards
+
+  prometheus:
+    image: prom/prometheus:v2.34.0
+    volumes:
+      - /etc/tvm/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /etc/tvm/prometheus/:/etc/prometheus/
+      - /etc/tvm/prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - 9090:9090
+    networks:
+      - monitoring
+
+  nginx:
+    image: nginx:1.21.0
+    ports:
+      - "80:80"
+      - "443:443"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "10"
+    networks:
+      - monitoring
+    volumes:
+      - "/etc/tvm/http.conf:/etc/nginx/conf.d/default.conf"
+      - "/etc/tvm/certificate.pem:/etc/nginx/fullchain.pem"
+      - "/etc/tvm/key.pem:/etc/nginx/privkey.pem"
+
+networks:
+  monitoring:
+    external: false
