@@ -2,6 +2,9 @@
 
     ```bash
     pip install ansible
+
+    # For local installs
+    sudo apt install -y sshpass
     ```
 
 2. Create a file called `vars.yml` that looks like
@@ -23,6 +26,9 @@
 
     ```bash
     ansible-playbook -i <ssh remote>, install.yml --extra-vars=@vars.yml
+
+    # For local installs
+    ansible-playbook -i <ssh remote>, install.yml --extra-vars=@vars.yml -kK
     ```
 
 

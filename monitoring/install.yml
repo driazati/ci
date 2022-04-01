@@ -6,16 +6,19 @@
   become_method: sudo
   gather_facts: false
   tasks:
-    - name: Setup
+    - name: Install packages
+      shell: |
+        apt update
+        apt install -y docker.io
+        apt install -y unzip
+    - name: Set up Docker Swarm
       # Note: The IP CIDR should be chosen carefully! Collisions with the host
       # network will make everything not work.
       shell: |
-        #apt update
-        #apt install -y docker.io
-        #apt install -y unzip
         docker swarm init --default-addr-pool 10.0.0.0/8 || echo done
         docker stack rm monitoring || echo done
-
+    - name: Create folders
+      shell: |
         rm -rf /etc/tvm
         mkdir -p \
           /etc/tvm/grafana-provisioning/datasources \
@@ -23,7 +26,8 @@
           /etc/tvm/grafana-provisioning/dashboards \
           /etc/tvm/grafana-provisioning/dashboards \
           /etc/tvm/dashboards/ \
-          /etc/tvm/prometheus \
+          /etc/tvm/loki_data \
+          /etc/tvm/postgres_data \
           /etc/tvm/prometheus \
           /etc/tvm/prometheus_data \
           /etc/tvm/grafana
