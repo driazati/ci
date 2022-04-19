@@ -19,7 +19,7 @@
         docker stack rm monitoring || echo done
     - name: Create folders
       shell: |
-        rm -rf /etc/tvm
+        # rm -rf /etc/tvm
         mkdir -p \
           /etc/tvm/grafana-provisioning/datasources \
           /etc/tvm/grafana-provisioning/notifiers \
@@ -44,8 +44,13 @@
       copy:
         src: jenkins_fetcher.tar.gz
         dest: /etc/tvm/jenkins_fetcher.tar.gz
+    - name: Copy test fetcher image
+      copy:
+        src: jenkins_testfetcher.tar.gz
+        dest: /etc/tvm/jenkins_testfetcher.tar.gz
     - name: Unpack fetcher
       shell: |
+        docker load --input /etc/tvm/jenkins_testfetcher.tar.gz
         docker load --input /etc/tvm/jenkins_fetcher.tar.gz
     - name: Run compose
       shell: |

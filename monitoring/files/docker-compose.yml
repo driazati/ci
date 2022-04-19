@@ -79,6 +79,20 @@ services:
     depends_on:
       - postgres
 
+  testfetcher:
+    image: jenkins_testfetcher:latest
+    environment:
+      db_host: postgres:5432
+      db_user: {{ passwords.postgres_user }}
+      db_password: {{ passwords.postgres_password }}
+      loki_host: loki:3100
+    volumes:
+      - /etc/tvm/fetcher_data:/opt/fetcher/.httpcache
+    networks:
+      - monitoring
+    depends_on:
+      - postgres
+
   nginx:
     image: nginx:1.21.0
     # network_mode: host
@@ -102,6 +116,6 @@ networks:
     external: false
 
 # networks:
-#   host:
-#     name: host
+#   monitoring:
+#     name: monitoring
 #     external: true
